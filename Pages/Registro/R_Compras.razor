@@ -1,0 +1,254 @@
+@page "/R_Compra"
+@page "/R_Compra/{CompraId:int}"
+
+@using BLL
+@using DAL
+@using Models
+@*inject IToastService toastService*@
+
+<EditForm Model="compra" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+
+    <div className="Container">
+        <div class="card align-items-center" style=" box-shadow: 8px 8px rgba(0, 0, 0, 0.26);">
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Registro de compras</h3>
+                </div>
+
+                <div class="card-body" style="width: 60rem;">
+                    @* Compra ID *@
+                    <div class="form-row align-items-center">
+                        <div class="row">
+                            <div class="form-group col-md-5">
+                            <label>Compra Id</label>
+                            <div class="input-group">
+                                <InputNumber @bind-Value="compra.CompraId" style="height: 30px;" class="form-control" />
+                                <div class="form-group col">
+
+                                    <button type="button" style="z-index: ;0" class="btn btn-primary input-group-text"
+                                        @onclick="Buscar"><span class="oi oi-magnifying-glass"></span></button>
+                                </div>
+                            </div>
+                            </div>
+
+                            @*Fecha*@
+                            <div class="form-group col-md-3">
+                            <label>Fecha</label>
+                            <InputDate class="form-control" @bind-Value="compra.Fecha" />
+                            <ValidationMessage For="@(() => compra.Fecha)" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* COMPRA DETALLE *@
+    <div class="card">
+         <div class="card align-items-center" style=" box-shadow: 8px 8px rgba(0, 0, 0, 0.26);">
+       <hr>
+
+        <form>
+
+            <div class=" row input-group d-flex align-items-end">
+
+                @* Producto Id *@
+                <div class="form-group col">
+                    <label>ProductoId</label>
+                    <InputNumber class="form-control" @bind-Value="ProductoId" />
+                    <ValidationMessage For="@(() => ProductoId)" />
+                    <div class="input-group-append">
+                        <button type="button" style="z-index: ;0" class="btn btn-primary input-group-text"
+                            @onclick="Buscar"><span class="oi oi-magnifying-glass"></span></button>
+                    </div>
+                </div>
+
+
+                @* Descripcion *@
+                <div class="form-group col">
+                    <label>Descripción</label>
+                    <InputText class="form-control" @bind-Value="Descripcion" placeholder="Descripcion"></InputText>
+                    <ValidationMessage For="@(() => Descripcion)" />
+                </div>
+
+                @* Cantidad *@
+                <div class="form-group col">
+                    <label>Cantidad</label>
+                    <InputNumber class="form-control" @bind-Value="Cantidad" />
+                    <ValidationMessage For="@(() => Cantidad)" />
+                    @if (Cantidad < 0)
+                    {
+                        <label>
+                            La Cantidad No puede ser menor a cero
+                        </label>
+                    }
+                </div>
+
+                @* Costo *@
+                <div class="form-group col">
+                    <label>Costo</label>
+                    <InputNumber class="form-control" @bind-Value="Costo" />
+                    <ValidationMessage For="@(() => Costo)" />
+                    @if (Costo < 0)
+                    {
+                        <label>
+                            El Precio No puede ser menor a cero
+                        </label>
+                    }
+                </div>
+
+
+                <div class="form-group col-md-2">
+                    <button type="button" class="btn btn-success col" @onclick="AgregarDetalle">
+                        <span class="oi oi-plus">Agregar</span>
+                    </button>
+
+                </div>
+            </div>
+
+            <br>
+            @* Tabla de detalles *@
+            <table class="table table-bordered table-light">
+                <thead class="thead">
+                    <tr class="table">
+                        <th>ProductoId</th>
+                        <th>Descripción</th>
+                        <th>Costo</th>
+                        <th>Cantidad</th>
+                        <th>Importe</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in compra.Detalle)
+                    {
+                        <tr>
+                            <td>@item.ProductoId</td>
+                            <td>@item.Descripcion</td>
+                            <td>RD$@item.Costo</td>
+                            <td>@item.Cantidad</td>
+                            <td>RD$@item.Importe</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </form>
+        @*Total*@
+        <div class="form-group col-md-2">
+            <label>Total</label>
+            <span class="form-control">@Total</span>
+            <ValidationMessage For="@(() => compra.Total)" />
+
+
+        </div>
+        <div class="card-footer">
+
+            @* BOTONES *@
+            <div class="card-footer">
+                @* Botones *@
+                <div class="form-group text-center" display: inline-block>
+                    <button type="button" style="margin: 4px;" class="btn btn-lg btn-primary"
+                        @onclick="Nuevo">Nuevo</button>
+                    <button type="submit" style="margin: 4px;" class="btn btn-lg btn-success"
+                        @onclick="Guardar">Guardar</button>
+                    <button type="button" style="margin: 4px;" class="btn btn-lg btn-danger"
+                        @onclick="Eliminar">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </div>
+
+</EditForm>
+
+@code
+{
+    [Parameter]
+    public int CompraId { get; set; }
+    public int ProductoId { get; set; }
+    public String? Descripcion { get; set; }
+    public int Cantidad { get; set; }
+    public decimal Costo { get; set; }
+    public decimal Importe { get; set; }
+    public decimal Total { get; set; }
+    public Compras compra { get; set; } = new Compras();
+    public CompraDetalles compraDetalle { get; set; } = new CompraDetalles();
+
+    [Inject]
+    public CompraBLL compraBLL { get; set; }
+
+    protected override void OnInitialized()
+    {
+        compra.CompraId = CompraId;
+        Buscar();
+    }
+    public void Buscar()
+    {
+        if (this.compra.CompraId > 0)
+        {
+            Compras encontrado = compraBLL.Buscar(this.compra.CompraId);
+            if (encontrado != null)
+            {
+                this.compra = encontrado;
+            }
+        }
+    }
+
+    private void Nuevo()
+    {
+        compra = new Compras();
+    }
+
+    public void NuevoDetalle()
+    {
+        Descripcion = "";
+        Costo = 0;
+        Cantidad = 0;
+        Importe = 0;
+    }
+    public void Guardar()
+    {
+        if (compraBLL.Guardar(compra))
+        {
+             //toastService.ShowInfo("Se guardó exitosamente");
+        }
+        else
+        {
+            //toastService.ShowError("No se pudo guardar.");
+        }
+
+    }
+    private void Eliminar()
+    {
+        bool eliminado;
+        eliminado = compraBLL.Eliminar(compra.CompraId);
+        if (eliminado)
+        {
+            Nuevo();
+           // toastService.ShowSuccess("Eliminación exitosa");
+        }
+        else
+        {
+            // toastService.ShowError("Eliminación fallida");
+        }
+    }
+
+    public void AgregarDetalle()
+    {
+        this.compra.Detalle.Add(new CompraDetalles(Descripcion, Costo, Cantidad, Importe));
+        Total += Importe;
+        Total = compra.Detalle.Sum(c => c.Importe);
+        NuevoDetalle();
+    }
+
+    private void RemoverFila(CompraDetalles item)
+    {
+        this.compra.Detalle.Remove(item);
+        Total -= item.Importe;
+    }
+}

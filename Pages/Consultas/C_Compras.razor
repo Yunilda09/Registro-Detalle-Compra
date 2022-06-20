@@ -1,0 +1,87 @@
+@page "/C_Compras"
+
+@using Models
+@using BLL
+
+
+
+<EditForm Model="compra">
+    <DataAnnotationsValidator />
+
+    <div class="card" style="box-shadow: 8px 8px rgba(0, 0, 0, 0.26);">
+
+        <div class="card-header">
+            <h4 style="text-align: center;">Consulta de compra</h4>
+        </div>
+
+        <div class="card-body">
+
+            <form>
+                <div class="input-group d-flex align-items-end">
+
+                    <div class="flex-fill mx-2">
+                        <label>Compra ID </label>
+                        <InputText class="form-control" @bind-Value="Criterio" />
+                    </div>
+                    <div class="flex-fill mx-2">
+                        <label>Descripcion</label>
+                        <InputText class="form-control" readonly @bind-Value="compra.Descripcion" />
+                    </div>
+
+                    <button type="button" class="btn btn-primary" @onclick="Buscar">
+                        <i class="oi oi-magnifying-glass mr-2" /> Buscar
+                    </button>
+                </div>
+            </form>
+        </div>
+        <table class="table table-light" style="box-shadow: 1px 6px rgba(0, 0, 0, 0.2);">
+            <thead class="thead">
+                <tr class="table">
+                    <th>CompraId</th>
+                    <th>Descripción</th>
+                    <th>Cantidad</th>
+                    <th>Costo</th>
+                    <th>Importe</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+                    @foreach (var item in compra.Detalle)
+                    {
+                        <tr>
+                            <td>@item.CompraId</td>
+                            <td>@nombreCompra</td>
+                            <td>@item.Descripcion</td>
+                            <td>@item.Costo</td>
+                            <td>@item.Importe</td>
+                        </tr>
+                    }
+              
+            </tbody>
+
+        </table>
+    </div>
+</EditForm>
+
+@code {
+    public Compras compra { get; set; } = new Compras();
+     public CompraDetalles compraDetalles { get; set; } = new CompraDetalles();
+    private int Descripcion;
+    private string? nombreCompra;
+    public string Criterio;
+    public List<Compras> listaCompras { get; set; } = new List<Compras>();
+    [Inject]
+    public CompraBLL? compraBLL { get; set; }
+
+  public void Buscar()
+    {
+        if (this.compra.CompraId > 0)
+        {
+            Compras encontrado = compraBLL.Buscar(this.compra.CompraId);
+            if (encontrado != null)
+            {
+                this.compra = encontrado;
+            }
+        }
+    }
+}
